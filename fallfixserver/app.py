@@ -21,11 +21,36 @@ def input(session, force, count):
     return "<p>Hello, World!</p>"
 
 @app.route("/output/<session>")
-def outpot(session):
+def output(session):
     con = sqlite3.connect('wizeview.db')
     session = session
     cur=con.cursor()
-    output=cur.execute("SELECT * FROM data ORDER BY date DESC LIMIT 1").fetchall()
+    output=cur.execute("SELECT * FROM data WHERE SESSION=('%s') ORDER BY date DESC LIMIT 1" % (session)).fetchall()
+    print(output)
+    con.close()
+    return "<p>Hello, World!</p>"
+
+@app.route("/setuser/<session>/<gender>/<age>")
+def setuser(session, gender, age):
+    con = sqlite3.connect('wizeview.db')
+    session=session
+    gender = gender
+    age=age
+    cur = con.cursor()
+
+    cur.execute("INSERT INTO userattr VALUES ('%s','%s','%s')" % (session, gender, age))
+
+    con.commit()
+
+    con.close()
+    return "<p>Hello, Word!</p>"
+
+@app.route("/getuser/<session>")
+def getuser(session):
+    con = sqlite3.connect('wizeview.db')
+    session = session
+    cur=con.cursor()
+    output=cur.execute("SELECT * FROM userattr WHERE session=('%s')" % (session)).fetchall()
     print(output)
     con.close()
     return "<p>Hello, World!</p>"
@@ -36,4 +61,4 @@ def test():
 
 if __name__ == '__main__':
     app.debug = True
-    app.run(host='172.28.105.180', port=5000)
+    app.run(host='0.0.0.0', port=5000)
