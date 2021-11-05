@@ -74,6 +74,22 @@ def getuser(session):
     con.close()
     return ret
 
+@app.route("/delete/<session>")
+def delete(session):
+    con = sqlite3.connect('wizeview.db')
+    session = session
+    cur = con.cursor()
+
+    cur.execute("DELETE FROM userattr WHERE session=('%s')" % (session))
+    cur.execute("DELETE FROM init WHERE session=('%s')" % (session))
+    cur.execute("DELETE FROM data WHERE session=('%s')" % (session))
+
+    con.commit()
+
+    con.close()
+
+    return "<p>Hello, World!</p>"
+
 if __name__ == '__main__':
     app.debug = True
     app.run(host='0.0.0.0', port=5000)
