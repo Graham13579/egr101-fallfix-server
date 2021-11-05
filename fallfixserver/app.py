@@ -31,9 +31,9 @@ def output(session):
     session = session
     cur=con.cursor()
     output=cur.execute("SELECT * FROM data WHERE SESSION=('%s') ORDER BY date DESC LIMIT 1" % (session)).fetchall()
-    print(','.join(output[0]))
+    ret = ','.join(output[0])
     con.close()
-    return "<p>Hello, World!</p>"
+    return ret
 
 @app.route("/getstart/<session>")
 def getstart(session):
@@ -70,9 +70,9 @@ def getuser(session):
     session = session
     cur=con.cursor()
     output=cur.execute("SELECT * FROM userattr WHERE session=('%s')" % (session)).fetchall()
-    print(','.join(output[0]))
+    ret = ','.join(output[0])
     con.close()
-    return "<p>Hello, World!</p>"
+    return ret
 
 if __name__ == '__main__':
     app.debug = True
