@@ -6,7 +6,7 @@ cur = con.cursor()
 
 # Create table
 cur.execute('''CREATE TABLE data
-               (session text, date text, secondsleft text, force text, count text)''')
+               (session text, secondsleft text, date text, count text)''')
 
 cur.execute('''CREATE TABLE init
                (session text, initstart text)''')

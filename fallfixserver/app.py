@@ -1,14 +1,17 @@
 from flask import Flask, request
 import datetime
 import sqlite3
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 app = Flask(__name__)
 
-@app.route("/input/<session>/<force>/<count>")
-def input(session, force, count):
+@app.route("/input/<session>/<count>")
+def input(session, count):
     con = sqlite3.connect('wizeview.db')
     session = session
-    force = force
     count = count
     date = datetime.datetime.now()
     cur = con.cursor()
@@ -17,7 +20,7 @@ def input(session, force, count):
     difference = date - initstartobj
     secondsleft = difference.total_seconds()
 
-    cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s','%s')" % (session, secondsleft, date, force, count))
+    cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % (session, secondsleft, date, count))
 
     con.commit()
 
@@ -83,6 +86,62 @@ def delete(session):
     cur.execute("DELETE FROM userattr WHERE session=('%s')" % (session))
     cur.execute("DELETE FROM init WHERE session=('%s')" % (session))
     cur.execute("DELETE FROM data WHERE session=('%s')" % (session))
+
+    con.commit()
+
+    con.close()
+
+    return "<p>Hello, World!</p>"
+
+@app.route("/retgraph/<session>")
+def retgraph(session):
+    con = sqlite3.connect('wizeview.db')
+    session = session
+    cur = con.cursor()
+
+    secondsleft=cur.execute("SELECT secondsleft FROM data WHERE SESSION=('%s') ORDER BY date" % (session)).fetchall()
+    count=cur.execute("SELECT count FROM data WHERE SESSION=('%s') ORDER BY date" % (session)).fetchall()
+
+    secondsleftlist=[]
+    countlist=[]
+
+    secondsleftlist.append(30-int(secondsleft[0][0]))
+    for i in range(1, len(secondsleft)):
+        secondsleftlist.append(29.999999999-int(secondsleft[i][0]))
+        secondsleftlist.append(30-int(secondsleft[i][0]))
+    secondsleftlist.append(30)
+    
+    countlist.append(int(count[0][0]))
+    for i in range(1, len(count)):
+        countlist.append(int(count[i-1][0]))
+        countlist.append(int(count[i][0]))
+    countlist.append(int(count[len(count)-1][0]))
+
+    fig, ax = plt.subplots()
+    ax.plot(secondsleftlist, countlist)
+
+    ax.set(xlabel='time (s)', ylabel='count',
+        title=session + ' data')
+    ax.grid()
+
+    fig.savefig("plots/"+session+".png")
+
+    con.close()
+
+    return "<p>Hello, World!</p>"
+
+@app.route("/generatetestdata")
+def generatetestdata():
+    con = sqlite3.connect('wizeview.db')
+    cur = con.cursor()
+
+    cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % ("testsession", "30", "", "0"))
+    cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % ("testsession", "26", "", "1"))
+    cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % ("testsession", "19", "", "2"))
+    cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % ("testsession", "13", "", "3"))
+    cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % ("testsession", "9", "", "4"))
+    cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % ("testsession", "5", "", "5"))
+    cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % ("testsession", "1", "", "6"))
 
     con.commit()
 
