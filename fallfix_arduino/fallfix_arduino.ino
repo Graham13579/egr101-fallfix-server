@@ -19,6 +19,20 @@ boolean flag2 = false;
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
+#include <SPI.h>
+#include <WiFiNINA.h>
+
+char ssid[] = "DukeVisitor"; //  your network SSID (name)
+int keyIndex = 0;            // your network key Index number (needed only for WEP)
+
+int status = WL_IDLE_STATUS;
+char server[] = "172.28.87.86";    // name address for Arduino (using DNS)
+
+// Initialize the Wifi client library
+// with the IP address and port of the server
+// that you want to connect to (port 80 is default for HTTP):
+WiFiClient client;
+
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
 
 void setup() 
@@ -35,6 +49,24 @@ void setup()
   lcd.setCursor(0,2); 
   lcd.print("Begin");
   pinMode(2, INPUT);
+
+  //Initialize serial and wait for port to open:
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for Leonardo only
+  }
+
+  // attempt to connect to Wifi network:
+  while (status != WL_CONNECTED) {
+    Serial.print("Attempting to connect to SSID: ");
+    Serial.println(ssid);
+    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+    status = WiFi.begin(ssid);
+
+    // wait 10 seconds for connection:
+    delay(10000);
+  }
+  Serial.println("Connected to wifi");
 }
 
 
@@ -406,6 +438,19 @@ void loop()
     if(flag==true){
       if (totalForce>8000){
         count++;
+        Serial.println("\nStarting connection to server...");
+        // if you get a connection, report back via serial:
+        if (client.connect(server, 80)) {
+          Serial.println("Connected to server");
+          // Make a HTTP request:
+          client.println("GET /input/arya123/" + String(count) + " HTTP/1.1");
+          client.println("Host: http://172.28.87.86:80");
+          client.println("Connection: close");
+          client.println();
+          Serial.println("Request sent");
+        }
+        client.flush();
+        
         flag = false;
       }
     }
