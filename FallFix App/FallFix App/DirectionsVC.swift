@@ -14,9 +14,7 @@ class DirectionsVC: UIViewController {
     @IBOutlet weak var TimeLeftLabel: UILabel!
     
     @IBOutlet weak var Start: UIButton!
-    
-    @IBOutlet weak var DirectionImage: UIImageView!
-    
+        
     @IBOutlet weak var DirectionText: UITextView!
     
     @IBAction func Start(_ sender: Any) {
@@ -56,7 +54,7 @@ class DirectionsVC: UIViewController {
     func printMessagesForUser(CompletionHandler: @escaping (Bool?, Error?) -> Void){
         do {
             
-            let url = NSURL(string: "http://172.28.194.82:5000/getstart/arya123/")
+            let url = NSURL(string: "http://172.28.77.91:5000/getstart/arya125")
             let request = NSMutableURLRequest(url: url as! URL)
             request.httpMethod = "Get"
             
@@ -86,7 +84,6 @@ class DirectionsVC: UIViewController {
         if (timeleft > 0) {
             timeleft-=1
             TimeLeftLabel.isHidden = false
-            DirectionImage.isHidden = true
             DirectionText.isHidden = true
             TimeLeftLabel.text = "Time Left = " + String(timeleft+1)
         } else {

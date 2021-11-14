@@ -11,6 +11,7 @@ class SitStandVC: UIViewController {
 
     @IBOutlet weak var TimerLabel: UILabel!
     
+    @IBOutlet weak var ResultsLabel: UIButton!
     @IBOutlet weak var CountLabel: UILabel!
     
     var timeLeft: String = ""
@@ -19,6 +20,8 @@ class SitStandVC: UIViewController {
     var timer = Timer()
 
     override func viewDidLoad() {
+        ResultsLabel.isHidden = true
+        ResultsLabel.isEnabled = false
         self.timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { _ in
             self.updateCounting()
         })
@@ -36,7 +39,10 @@ class SitStandVC: UIViewController {
                     DispatchQueue.main.async {
                         self.TimerLabel.text = self.timeLeft + " Sec"
                         self.CountLabel.text = "Count = " + self.count
-                        
+                        if (self.timeLeft == "0") {
+                            self.ResultsLabel.isHidden = false
+                            self.ResultsLabel.isEnabled = true
+                        }
                     }
                 } else {
                     print(error)
@@ -49,7 +55,7 @@ class SitStandVC: UIViewController {
     func printMessagesForUser(CompletionHandler: @escaping (Bool?, Error?) -> Void){
         do {
             
-            let url = NSURL(string: "http://172.28.194.82:5000/output/arya123/")
+            let url = NSURL(string: "http://172.28.77.91:5000/output/arya125")
             let request = NSMutableURLRequest(url: url as! URL)
             request.httpMethod = "Get"
             
@@ -58,6 +64,7 @@ class SitStandVC: UIViewController {
             let task = URLSession.shared.dataTask(with: request as URLRequest){ data, response, error in
                 if let returned = String(data: data!, encoding: .utf8) {
                     var newret: [String] = returned.components(separatedBy: ",")
+                    
                     self.timeLeft = newret[0]
                     self.count = newret[1]
                     CompletionHandler(true,nil)
