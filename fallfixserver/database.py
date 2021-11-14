@@ -13,3 +13,5 @@ cur.execute('''CREATE TABLE init
 
 cur.execute('''CREATE TABLE userattr
                (session text, gender text, age text)''')
+
+con.close()
