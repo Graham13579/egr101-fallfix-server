@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import base64
 
 app = Flask(__name__)
 
@@ -109,10 +110,24 @@ def retgraph(session):
     cur = con.cursor()
 
     secondsleft=cur.execute("SELECT secondsleft FROM data WHERE SESSION=('%s') ORDER BY date" % (session)).fetchall()
-    count=cur.execute("SELECT count FROM data WHERE SESSION=('%s') ORDER BY date" % (session)).fetchall()
+    c=cur.execute("SELECT count FROM data WHERE SESSION=('%s') ORDER BY date" % (session)).fetchall()
+
+    size=len(secondsleft)
+
+    for i in range(1, len(c)):
+        if c[i] == 0:
+            size = i
+            break
+    
+    secondsleft = secondsleft[:i]
+    c = c[:i]
 
     secondsleftlist=[]
     countlist=[]
+
+    gender = cur.execute("SELECT gender FROM userattr WHERE SESSION=('%s')" % (session)).fetchall()[0][0]
+    age = int(cur.execute("SELECT age FROM userattr WHERE SESSION=('%s')" % (session)).fetchall()[0][0])
+    count = int(c[len(c) - 1][0])
 
     secondsleftlist.append(30-int(secondsleft[0][0]))
     for i in range(1, len(secondsleft)):
@@ -120,11 +135,11 @@ def retgraph(session):
         secondsleftlist.append(30-int(secondsleft[i][0]))
     secondsleftlist.append(30)
     
-    countlist.append(int(count[0][0]))
-    for i in range(1, len(count)):
-        countlist.append(int(count[i-1][0]))
-        countlist.append(int(count[i][0]))
-    countlist.append(int(count[len(count)-1][0]))
+    countlist.append(int(c[0][0]))
+    for i in range(1, len(c)):
+        countlist.append(int(c[i-1][0]))
+        countlist.append(int(c[i][0]))
+    countlist.append(int(c[len(c)-1][0]))
 
     fig, ax = plt.subplots()
     ax.plot(secondsleftlist, countlist)
@@ -137,12 +152,115 @@ def retgraph(session):
 
     con.close()
 
-    return "<p>Hello, World!</p>"
+    base = base64.b64encode(open("plots/"+session+".png","rb").read())
+    
+    success = True
+
+    if int(age) >= 90:
+        if gender:
+            mincount=4
+            if count >= 4:
+                success = True
+            else:
+                success = False
+        else:
+            mincount=7
+            if count >= 7:
+                success = True
+            else:
+                success = False
+    elif int(age) >= 85:
+        if gender:
+            mincount=8
+            if count >= 8:
+                success = True
+            else:
+                success = False
+        else:
+            mincount=8
+            if count >= 8:
+                success = True
+            else:
+                success = False
+    elif int(age) >= 80:
+        if gender:
+            mincount=9
+            if count >= 9:
+                success = True
+            else:
+                success = False
+        else:
+            mincount=10
+            if count >= 10:
+                success = True
+            else:
+                success = False
+    elif int(age) >= 75:
+        if gender:
+            mincount=10
+            if count >= 10:
+                success = True
+            else:
+                success = False
+        else:
+            mincount=11
+            if count >= 11:
+                success = True
+            else:
+                success = False
+    elif int(age) >= 70:
+        if gender:
+            mincount=10
+            if count >= 10:
+                success = True
+            else:
+                success = False
+        else:
+            mincount=12
+            if count >= 12:
+                success = True
+            else:
+                success = False
+    elif int(age) >= 65:
+        if gender:
+            mincount=11
+            if count >= 11:
+                success = True
+            else:
+                success = False
+        else:
+            mincount=12
+            if count >= 12:
+                success = True
+            else:
+                success = False
+    else:
+        if gender:
+            mincount=12
+            if count >= 12:
+                success = True
+            else:
+                success = False
+        else:
+            mincount=14
+            if count >= 14:
+                success = True
+            else:
+                success = False
+    
+    if success:
+        result = "You passed! Great job! In order to pass you needed to have had a score of " + str(mincount) + ", and you had a score of " + str(count) + " so we have not found you to be at risk of falling!"
+    else:
+        result = "Unfortunately, you did not pass. In order to pass, you needed to have a score of " + str(mincount) + ", but you had a score of " + str(count) + " so we have found you to be at risk of falling. Don't get discouraged! We believe in you!"
+
+    return result + ",-," + str(base)[2:len(str(base))-1]
 
 @app.route("/generatetestdata")
 def generatetestdata():
     con = sqlite3.connect('wizeview.db')
     cur = con.cursor()
+
+    cur.execute("INSERT INTO userattr VALUES ('%s','%s','%s')" % ("testsession", "false", "72"))
 
     cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % ("testsession", "30", "", "0"))
     cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % ("testsession", "26", "", "1"))
