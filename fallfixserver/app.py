@@ -15,7 +15,8 @@ def input(session, count):
     count = count
     date = datetime.datetime.now()
     cur = con.cursor()
-    initstart = cur.execute("SELECT * FROM init WHERE SESSION=('%s') LIMIT 1" % (session)).fetchall()[0][1]
+    initstart = cur.execute("SELECT * FROM init WHERE SESSION=('%s')" % (session)).fetchall()[0][1]
+    print(initstart)
     initstartobj = datetime.datetime.strptime(initstart, "%Y-%m-%d %H:%M:%S.%f")
     difference = date - initstartobj
     secondsleft = difference.total_seconds()
@@ -33,8 +34,13 @@ def output(session):
     con = sqlite3.connect('wizeview.db')
     session = session
     cur=con.cursor()
+    date = datetime.datetime.now()
+    initstart = cur.execute("SELECT * FROM init WHERE SESSION=('%s')" % (session)).fetchall()[0][1]
+    initstartobj = datetime.datetime.strptime(initstart, "%Y-%m-%d %H:%M:%S.%f")
+    difference = date - initstartobj
+    secondsleft = 30 - difference.total_seconds()
     output=cur.execute("SELECT * FROM data WHERE SESSION=('%s') ORDER BY date DESC LIMIT 1" % (session)).fetchall()
-    ret = ','.join(output[0])
+    ret = str(int(round(secondsleft,0)))+","+str(int(round(float(output[0][3]),0)))
     con.close()
     return ret
 
@@ -45,6 +51,9 @@ def getstart(session):
     initstart = datetime.datetime.now()
     cur=con.cursor()
 
+    cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % (session, "30", "", "0"))
+
+    cur.execute("DELETE FROM init WHERE SESSION=('%s')" % (session))
     cur.execute("INSERT INTO init VALUES ('%s','%s')" % (session, initstart))
 
     con.commit()
@@ -151,4 +160,4 @@ def generatetestdata():
 
 if __name__ == '__main__':
     app.debug = True
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='172.28.77.91', port=5000)
