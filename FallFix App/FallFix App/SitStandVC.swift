@@ -38,7 +38,8 @@ class SitStandVC: UIViewController {
                 {
                     DispatchQueue.main.async {
                         self.TimerLabel.text = self.timeLeft + " Sec"
-                        self.CountLabel.text = "Count = " + self.count
+//                        self.CountLabel.text = "Count = " + self.count
+                        self.CountLabel.text = self.count
                         if (self.timeLeft == "0") {
                             self.ResultsLabel.isHidden = false
                             self.ResultsLabel.isEnabled = true

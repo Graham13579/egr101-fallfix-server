@@ -46,6 +46,15 @@ class UserInfoVC: UIViewController {
         
     func printMessagesForUser(gender: Bool, age:Int, CompletionHandler: @escaping (Bool?, Error?) -> Void){
         do {
+            let myurl = NSURL(string: "http://172.28.77.91:5000/delete/arya125")
+            let myrequest = NSMutableURLRequest(url: myurl as! URL)
+            myrequest.httpMethod = "Get"
+            
+            let mytask = URLSession.shared.dataTask(with: myrequest as URLRequest){ data, response, error in
+                    CompletionHandler(true,nil)
+                
+            }
+            mytask.resume()
             
             let url = NSURL(string: "http://172.28.77.91:5000/setuser/arya125/" + String(gender) + "/" + String(age))!
             let request = NSMutableURLRequest(url: url as URL)
@@ -66,6 +75,7 @@ class UserInfoVC: UIViewController {
                 
             }
             task.resume()
+            
         } catch {
             
             print(error)

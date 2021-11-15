@@ -74,6 +74,26 @@ class DirectionsVC: UIViewController {
                 
             }
             task.resume()
+            
+            let myurl = NSURL(string: "http://172.28.77.91:5000/sendudp/arya125")
+            let myrequest = NSMutableURLRequest(url: myurl as! URL)
+            myrequest.httpMethod = "Get"
+            
+            let mytask = URLSession.shared.dataTask(with: myrequest as URLRequest){ data, response, error in
+                if let myreturned = String(data: data!, encoding: .utf8) {
+                    var mynewret: [String] = myreturned.components(separatedBy: ",")
+                    
+                    CompletionHandler(true,nil)
+                    
+                    //self.Severity.text = "hello"
+                } else {
+                }
+                
+                //self.Severity.text = "test"
+                
+            }
+            mytask.resume()
+            
         } catch {
             
             print(error)

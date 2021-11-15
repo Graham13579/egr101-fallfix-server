@@ -6,6 +6,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import base64
+import socket
 
 app = Flask(__name__)
 
@@ -17,12 +18,12 @@ def input(session, count):
     date = datetime.datetime.now()
     cur = con.cursor()
     initstart = cur.execute("SELECT * FROM init WHERE SESSION=('%s')" % (session)).fetchall()[0][1]
-    print(initstart)
     initstartobj = datetime.datetime.strptime(initstart, "%Y-%m-%d %H:%M:%S.%f")
     difference = date - initstartobj
     secondsleft = difference.total_seconds()
 
-    cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % (session, secondsleft, date, count))
+    if secondsleft <= 30:
+        cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % (session, secondsleft, date, count))
 
     con.commit()
 
@@ -41,7 +42,10 @@ def output(session):
     difference = date - initstartobj
     secondsleft = 30 - difference.total_seconds()
     output=cur.execute("SELECT * FROM data WHERE SESSION=('%s') ORDER BY date DESC LIMIT 1" % (session)).fetchall()
-    ret = str(int(round(secondsleft,0)))+","+str(int(round(float(output[0][3]),0)))
+    if difference.total_seconds() <= 30:
+        ret = str(int(round(secondsleft,0)))+","+str(int(round(float(output[0][3]),0)))
+    else:
+        ret = "0," + str(int(round(float(output[0][3]),0)))
     con.close()
     return ret
 
@@ -52,7 +56,7 @@ def getstart(session):
     initstart = datetime.datetime.now()
     cur=con.cursor()
 
-    cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % (session, "30", "", "0"))
+    cur.execute("INSERT INTO data VALUES ('%s','%s','%s','%s')" % (session, "0", "", "0"))
 
     cur.execute("DELETE FROM init WHERE SESSION=('%s')" % (session))
     cur.execute("INSERT INTO init VALUES ('%s','%s')" % (session, initstart))
@@ -87,6 +91,22 @@ def getuser(session):
     con.close()
     return ret
 
+@app.route("/sendudp/<session>")
+def sendudp(session):
+    con = sqlite3.connect('wizeview.db')
+    UDP_IP = "172.28.123.204"
+    UDP_PORT = 2390
+    session = session
+    cur=con.cursor()
+    output=cur.execute("SELECT * FROM userattr WHERE session=('%s')" % (session)).fetchall()
+    if output[0][1] == "false":
+        message = "m" + "," + output[0][2]
+    else:
+        message = "f" + "," + output[0][2]
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.sendto(message.encode(), (UDP_IP, UDP_PORT))
+    return "<p>Hello, World!</p>"
+
 @app.route("/delete/<session>")
 def delete(session):
     con = sqlite3.connect('wizeview.db')
@@ -109,8 +129,8 @@ def retgraph(session):
     session = session
     cur = con.cursor()
 
-    secondsleft=cur.execute("SELECT secondsleft FROM data WHERE SESSION=('%s') ORDER BY date" % (session)).fetchall()
-    c=cur.execute("SELECT count FROM data WHERE SESSION=('%s') ORDER BY date" % (session)).fetchall()
+    secondsleft = cur.execute("SELECT secondsleft FROM data WHERE SESSION=('%s') ORDER BY date" % (session)).fetchall()
+    c = cur.execute("SELECT count FROM data WHERE SESSION=('%s') ORDER BY date" % (session)).fetchall()
 
     size=len(secondsleft)
 
@@ -119,8 +139,8 @@ def retgraph(session):
             size = i
             break
     
-    secondsleft = secondsleft[:i]
-    c = c[:i]
+    secondsleft = secondsleft[:size]
+    c = c[:size]
 
     secondsleftlist=[]
     countlist=[]
@@ -129,10 +149,10 @@ def retgraph(session):
     age = int(cur.execute("SELECT age FROM userattr WHERE SESSION=('%s')" % (session)).fetchall()[0][0])
     count = int(c[len(c) - 1][0])
 
-    secondsleftlist.append(30-int(secondsleft[0][0]))
+    secondsleftlist.append(float(secondsleft[0][0]))
     for i in range(1, len(secondsleft)):
-        secondsleftlist.append(29.999999999-int(secondsleft[i][0]))
-        secondsleftlist.append(30-int(secondsleft[i][0]))
+        secondsleftlist.append(float(secondsleft[i][0])-0.00000001)
+        secondsleftlist.append(float(secondsleft[i][0]))
     secondsleftlist.append(30)
     
     countlist.append(int(c[0][0]))
@@ -149,8 +169,6 @@ def retgraph(session):
     ax.grid()
 
     fig.savefig("plots/"+session+".png")
-
-    con.close()
 
     base = base64.b64encode(open("plots/"+session+".png","rb").read())
     
@@ -248,10 +266,15 @@ def retgraph(session):
             else:
                 success = False
     
+    result=""
     if success:
         result = "You passed! Great job! In order to pass you needed to have had a score of " + str(mincount) + ", and you had a score of " + str(count) + " so we have not found you to be at risk of falling!"
     else:
         result = "Unfortunately, you did not pass. In order to pass, you needed to have a score of " + str(mincount) + ", but you had a score of " + str(count) + " so we have found you to be at risk of falling. Don't get discouraged! We believe in you!"
+
+    con.commit()
+
+    con.close()
 
     return result + ",-," + str(base)[2:len(str(base))-1]
 
