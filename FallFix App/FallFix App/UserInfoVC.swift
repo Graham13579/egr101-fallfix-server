@@ -15,15 +15,17 @@ class UserInfoVC: UIViewController {
     
     @IBOutlet weak var AgeField: UITextField!
     
+    var genderVar: Bool = false
+    
     @IBAction func ConnectBtn(_ sender: Any) {
-        var genderVar: Bool = false
+        
         if (GenderPick.selectedSegmentIndex == 1) {
             genderVar = true
         } else {
             genderVar = false
         }
+        getDelete()
         
-        getLeader(gender: genderVar, age: Int(AgeField.text!)!)
         
     }
     
@@ -43,8 +45,25 @@ class UserInfoVC: UIViewController {
             DispatchQueue.main.async { // Correct
             }
         }
-        
-    func printMessagesForUser(gender: Bool, age:Int, CompletionHandler: @escaping (Bool?, Error?) -> Void){
+    
+    func getDelete() {
+        printMessagesForDelete() {
+                (returnval, error) in
+                if (returnval)!
+                {
+                    DispatchQueue.main.async {
+//put stuff to do after here
+                        self.getLeader(gender: self.genderVar, age: Int(self.AgeField.text!)!)
+                    }
+                } else {
+                    print(error)
+                }
+            }
+            DispatchQueue.main.async { // Correct
+            }
+        }
+    
+    func printMessagesForDelete(CompletionHandler: @escaping (Bool?, Error?) -> Void){
         do {
             let myurl = NSURL(string: "http://172.28.77.91:5000/delete/arya125")
             let myrequest = NSMutableURLRequest(url: myurl as! URL)
@@ -55,6 +74,17 @@ class UserInfoVC: UIViewController {
                 
             }
             mytask.resume()
+            
+        } catch {
+            
+            print(error)
+        }
+    }
+    
+    
+        
+    func printMessagesForUser(gender: Bool, age:Int, CompletionHandler: @escaping (Bool?, Error?) -> Void){
+        do {
             
             let url = NSURL(string: "http://172.28.77.91:5000/setuser/arya125/" + String(gender) + "/" + String(age))!
             let request = NSMutableURLRequest(url: url as URL)
