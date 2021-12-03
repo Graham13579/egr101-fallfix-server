@@ -65,7 +65,7 @@ class UserInfoVC: UIViewController {
     
     func printMessagesForDelete(CompletionHandler: @escaping (Bool?, Error?) -> Void){
         do {
-            let myurl = NSURL(string: "http://172.28.77.91:5000/delete/arya125")
+            let myurl = NSURL(string: "http://172.28.132.254:5000/delete/arya125")
             let myrequest = NSMutableURLRequest(url: myurl as! URL)
             myrequest.httpMethod = "Get"
             
@@ -86,7 +86,7 @@ class UserInfoVC: UIViewController {
     func printMessagesForUser(gender: Bool, age:Int, CompletionHandler: @escaping (Bool?, Error?) -> Void){
         do {
             
-            let url = NSURL(string: "http://172.28.77.91:5000/setuser/arya125/" + String(gender) + "/" + String(age))!
+            let url = NSURL(string: "http://172.28.132.254:5000/setuser/arya125/" + String(gender) + "/" + String(age))!
             let request = NSMutableURLRequest(url: url as URL)
             request.httpMethod = "Get"
             

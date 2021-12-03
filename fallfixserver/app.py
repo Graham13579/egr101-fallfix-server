@@ -94,7 +94,7 @@ def getuser(session):
 @app.route("/sendudp/<session>")
 def sendudp(session):
     con = sqlite3.connect('wizeview.db')
-    UDP_IP = "172.28.123.204"
+    UDP_IP = "172.28.34.18"
     UDP_PORT = 2390
     session = session
     cur=con.cursor()
@@ -301,4 +301,4 @@ def generatetestdata():
 
 if __name__ == '__main__':
     app.debug = True
-    app.run(host='172.28.77.91', port=5000)
+    app.run(host='172.28.132.254', port=5000)

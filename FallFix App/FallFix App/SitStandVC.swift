@@ -56,7 +56,7 @@ class SitStandVC: UIViewController {
     func printMessagesForUser(CompletionHandler: @escaping (Bool?, Error?) -> Void){
         do {
             
-            let url = NSURL(string: "http://172.28.77.91:5000/output/arya125")
+            let url = NSURL(string: "http://172.28.132.254:5000/output/arya125")
             let request = NSMutableURLRequest(url: url as! URL)
             request.httpMethod = "Get"
             

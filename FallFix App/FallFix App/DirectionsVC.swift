@@ -54,7 +54,7 @@ class DirectionsVC: UIViewController {
     func printMessagesForUser(CompletionHandler: @escaping (Bool?, Error?) -> Void){
         do {
             
-            let url = NSURL(string: "http://172.28.77.91:5000/getstart/arya125")
+            let url = NSURL(string: "http://172.28.132.254:5000/getstart/arya125")
             let request = NSMutableURLRequest(url: url as! URL)
             request.httpMethod = "Get"
             
@@ -75,7 +75,7 @@ class DirectionsVC: UIViewController {
             }
             task.resume()
             
-            let myurl = NSURL(string: "http://172.28.77.91:5000/sendudp/arya125")
+            let myurl = NSURL(string: "http://172.28.132.254:5000/sendudp/arya125")
             let myrequest = NSMutableURLRequest(url: myurl as! URL)
             myrequest.httpMethod = "Get"
             
